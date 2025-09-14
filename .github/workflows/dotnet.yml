@@ -11,7 +11,6 @@ on:
 
 jobs:
   build:
-
     runs-on: windows-latest
 
     steps:
@@ -20,9 +19,59 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
+
+    - name: Restore all projects/solutions
+      id: restore
+      shell: pwsh
+      run: |
+        $errors = @()
+        Get-ChildItem -Recurse -Include *.sln, *.csproj | ForEach-Object {
+          Write-Host "🔄 Restoring $($_.FullName)"
+          dotnet restore $_.FullName
+          if ($LASTEXITCODE -ne 0) { $errors += "Restore failed: $($_.FullName)" }
+        }
+        if ($errors.Count -gt 0) {
+          Write-Host "⚠️ Some restores failed:`n$($errors -join "`n")"
+          echo "restore_failed=true" >> $env:GITHUB_ENV
+        }
+
+    - name: Build all projects/solutions
+      id: build
+      shell: pwsh
+      run: |
+        $errors = @()
+        Get-ChildItem -Recurse -Include *.sln, *.csproj | ForEach-Object {
+          Write-Host "🏗️ Building $($_.FullName)"
+          dotnet build $_.FullName --no-restore
+          if ($LASTEXITCODE -ne 0) { $errors += "Build failed: $($_.FullName)" }
+        }
+        if ($errors.Count -gt 0) {
+          Write-Host "⚠️ Some builds failed:`n$($errors -join "`n")"
+          echo "build_failed=true" >> $env:GITHUB_ENV
+        }
+
+    - name: Test all projects/solutions
+      id: test
+      shell: pwsh
+      run: |
+        $errors = @()
+        Get-ChildItem -Recurse -Include *.sln, *.csproj | ForEach-Object {
+          Write-Host "🧪 Testing $($_.FullName)"
+          dotnet test $_.FullName --no-build --verbosity normal
+          if ($LASTEXITCODE -ne 0) { $errors += "Test failed: $($_.FullName)" }
+        }
+        if ($errors.Count -gt 0) {
+          Write-Host "⚠️ Some tests failed:`n$($errors -join "`n")"
+          echo "test_failed=true" >> $env:GITHUB_ENV
+        }
+
+    - name: Fail job if any step failed
+      if: always()
+      shell: pwsh
+      run: |
+        if ($env:restore_failed -eq "true" -or $env:build_failed -eq "true" -or $env:test_failed -eq "true") {
+          Write-Error "❌ One or more projects failed. See logs above."
+          exit 1
+        } else {
+          Write-Host "✅ All restores, builds, and tests passed."
+        }
