@@ -1,9 +1,9 @@
 # C# Learner Guides
 C# Learner is a blog about simplicity and pragmatism. I tend to write clear and simple articles, easily understandable by everyone.
 
-We run a primarily C#/.NET (Core) blog, with some accent on web development and web applications. Besides trying to implement best practices and use the newest technologies available, we are focusing on the entire lifecycle of .NET (Core) applications.
+I run a primarily C#/.NET (Core) blog, with some accent on web development and web applications. Besides trying to implement best practices and use the newest technologies available, we are focusing on the entire lifecycle of .NET (Core) applications.
 
-We think that the combination of a hands-on approach and focusing on the essence of the topic in our articles is what makes our blog unique. Hopefully, this approach will be something that helps you learn quicker and achieve the best results possible.
+We think that the combination of a hands-on approach and focusing on the essence of the topic in our articles is what makes our blog unique. Hopefully, this approach will be something that helps you learn quickly and achieve the best results possible.
 
 This repository contains most of the code from our blog.
 
